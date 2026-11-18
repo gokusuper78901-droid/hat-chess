@@ -1,0 +1,537 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hat Chess Online</title>
+
+<style>
+body {
+  margin: 0;
+  background: #111827;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+main {
+  max-width: 650px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 { font-size: 30px; }
+
+#status {
+  margin: 15px;
+  font-weight: bold;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 12px;
+}
+
+input, button {
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+button {
+  background: #5865f2;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 100%;
+  aspect-ratio: 1;
+  border: 5px solid #080d18;
+}
+
+.square {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  position: relative;
+}
+
+.light { background: #f0d9b5; }
+.dark { background: #b58863; }
+
+.selected {
+  outline: 4px solid yellow;
+  outline-offset: -4px;
+}
+
+.target:after {
+  content: "";
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: #166534;
+  position: absolute;
+}
+
+.piece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.hat {
+  font-size: clamp(16px, 4vw, 30px);
+}
+
+.name {
+  font-size: clamp(8px, 1.7vw, 15px);
+}
+
+.whitepiece {
+  color: white;
+  text-shadow: 1px 1px 2px black;
+}
+
+.blackpiece {
+  color: #171717;
+}
+
+.panel {
+  background: #1f2937;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+#moves {
+  font-family: monospace;
+  word-wrap: break-word;
+  line-height: 2;
+}
+</style>
+</head>
+
+<body>
+
+<main>
+
+<h1>♟ HAT CHESS</h1>
+<p>Chess, but every piece wears a hat.</p>
+
+<div class="panel">
+
+<div class="controls">
+<input id="room" placeholder="Enter room code">
+<button onclick="joinRoom()">JOIN ROOM</button>
+</div>
+
+<p id="roomName">Room: Not connected</p>
+<p id="myColor">Player: —</p>
+
+<div id="status">Enter a room code to play.</div>
+
+<div id="board"></div>
+
+<div class="controls">
+<button onclick="newGame()">NEW GAME</button>
+<button onclick="flipBoard()">FLIP BOARD</button>
+</div>
+
+</div>
+
+<div class="panel">
+<h3>MOVE HISTORY</h3>
+<div id="moves">No moves yet.</div>
+</div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+
+// =====================================
+// FIREBASE CONFIGURATION
+// PASTE YOUR FIREBASE CONFIG BELOW
+// =====================================
+
+const firebaseConfig = null;
+
+/*
+Example:
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "YOUR_DATABASE_URL",
+  projectId: "YOUR_PROJECT",
+  appId: "YOUR_APP_ID"
+};
+
+Replace null above with your actual config.
+*/
+
+// =====================================
+// GAME VARIABLES
+// =====================================
+
+let db = null;
+let roomRef = null;
+let game = new Chess();
+
+let myColor = null;
+let selected = null;
+let flipped = false;
+let roomCode = "";
+
+// =====================================
+// PIECE DESIGNS
+// =====================================
+
+const pieces = {
+  k: ["✝", "KING"],
+  q: ["♛", "QUEEN"],
+  r: ["▥", "ROOK"],
+  b: ["◇", "BISHOP"],
+  n: ["♞", "KNIGHT"],
+  p: ["⌂", "PAWN"]
+};
+
+// =====================================
+// CONNECT FIREBASE
+// =====================================
+
+function connectFirebase() {
+  if (!firebaseConfig) {
+    alert("Add your Firebase configuration first!");
+    return false;
+  }
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  db = firebase.database();
+  return true;
+}
+
+// =====================================
+// JOIN ONLINE ROOM
+// =====================================
+
+async function joinRoom() {
+
+  const code = document.getElementById("room")
+    .value.trim().toUpperCase();
+
+  if (!code) {
+    alert("Enter a room code!");
+    return;
+  }
+
+  if (!connectFirebase()) return;
+
+  roomCode = code;
+
+  roomRef = db.ref("hat-chess-rooms/" + code);
+
+  const snapshot = await roomRef.once("value");
+  const data = snapshot.val();
+
+  if (!data) {
+
+    myColor = "w";
+    game = new Chess();
+
+    await roomRef.set({
+      fen: game.fen(),
+      pgn: "",
+      players: { w: true }
+    });
+
+  } else if (!data.players || !data.players.b) {
+
+    myColor = "b";
+
+    await roomRef.child("players/b").set(true);
+
+  } else {
+
+    alert("This room is full!");
+    return;
+
+  }
+
+  document.getElementById("roomName").textContent =
+    "Room: " + code;
+
+  document.getElementById("myColor").textContent =
+    myColor === "w" ? "Player: White" : "Player: Black";
+
+  roomRef.on("value", snapshot => {
+
+    const data = snapshot.val();
+
+    if (!data || !data.fen) return;
+
+    if (data.fen !== game.fen()) {
+      game.load(data.fen);
+      selected = null;
+      renderBoard();
+      updateStatus();
+    }
+
+  });
+
+  renderBoard();
+  updateStatus();
+}
+
+// =====================================
+// DRAW CHESSBOARD
+// =====================================
+
+function renderBoard() {
+
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+
+  const files = flipped
+    ? "hgfedcba"
+    : "abcdefgh";
+
+  const ranks = flipped
+    ? "12345678"
+    : "87654321";
+
+  const legal = selected
+    ? game.moves({ square: selected, verbose: true })
+    : [];
+
+  for (const rank of ranks) {
+
+    for (const file of files) {
+
+      const square = file + rank;
+      const piece = game.get(square);
+
+      const btn = document.createElement("button");
+
+      const dark =
+        (files.indexOf(file) + ranks.indexOf(rank)) % 2 === 1;
+
+      btn.className =
+        "square " +
+        (dark ? "dark" : "light");
+
+      if (square === selected) {
+        btn.classList.add("selected");
+      }
+
+      if (legal.some(m => m.to === square)) {
+        btn.classList.add("target");
+      }
+
+      if (piece) {
+
+        const info = pieces[piece.type];
+
+        const wrap = document.createElement("span");
+        wrap.className =
+          "piece " +
+          (piece.color === "w"
+            ? "whitepiece"
+            : "blackpiece");
+
+        const hat = document.createElement("span");
+        hat.className = "hat";
+        hat.textContent = info[0];
+
+        const name = document.createElement("span");
+        name.className = "name";
+        name.textContent = info[1];
+
+        wrap.append(hat, name);
+        btn.append(wrap);
+
+      }
+
+      btn.onclick = () => clickSquare(square);
+
+      board.append(btn);
+
+    }
+
+  }
+
+  document.getElementById("moves").textContent =
+    game.history().join("  ") || "No moves yet.";
+
+}
+
+// =====================================
+// SELECT AND MOVE PIECES
+// =====================================
+
+function clickSquare(square) {
+
+  if (!roomRef || !myColor) return;
+
+  if (game.turn() !== myColor) return;
+
+  if (game.game_over()) return;
+
+  const piece = game.get(square);
+
+  if (selected) {
+
+    const move = game.move({
+      from: selected,
+      to: square,
+      promotion: "q"
+    });
+
+    if (move) {
+
+      selected = null;
+
+      renderBoard();
+      updateStatus();
+      publishMove();
+
+      return;
+
+    }
+
+    if (piece && piece.color === myColor) {
+      selected = square;
+      renderBoard();
+      return;
+    }
+
+    selected = null;
+    renderBoard();
+    return;
+
+  }
+
+  if (piece && piece.color === myColor) {
+    selected = square;
+    renderBoard();
+  }
+
+}
+
+// =====================================
+// SYNC ONLINE MOVES
+// =====================================
+
+async function publishMove() {
+
+  if (!roomRef) return;
+
+  await roomRef.update({
+    fen: game.fen(),
+    pgn: game.pgn()
+  });
+
+}
+
+// =====================================
+// GAME STATUS
+// =====================================
+
+function updateStatus() {
+
+  const status = document.getElementById("status");
+
+  if (game.in_checkmate()) {
+
+    status.textContent =
+      "CHECKMATE! " +
+      (game.turn() === "w" ? "BLACK" : "WHITE") +
+      " WINS!";
+
+  } else if (game.in_stalemate()) {
+
+    status.textContent = "DRAW: STALEMATE";
+
+  } else if (game.in_draw()) {
+
+    status.textContent = "DRAW!";
+
+  } else {
+
+    status.textContent =
+      (game.turn() === "w" ? "WHITE" : "BLACK") +
+      " TO MOVE" +
+      (game.in_check() ? " — CHECK!" : "");
+
+  }
+
+}
+
+// =====================================
+// NEW GAME
+// =====================================
+
+async function newGame() {
+
+  if (!roomRef) return;
+
+  if (!confirm("Restart the game for both players?")) return;
+
+  game = new Chess();
+  selected = null;
+
+  await roomRef.update({
+    fen: game.fen(),
+    pgn: ""
+  });
+
+  renderBoard();
+  updateStatus();
+
+}
+
+// =====================================
+// FLIP BOARD
+// =====================================
+
+function flipBoard() {
+
+  flipped = !flipped;
+
+  renderBoard();
+
+}
+
+// =====================================
+// INITIALIZE
+// =====================================
+
+renderBoard();
+
+</script>
+</body>
+</html>
