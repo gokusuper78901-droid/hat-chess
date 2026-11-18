@@ -115,14 +115,10 @@ async function initFirebase() {
 
   } catch (e) {
     setStatus("Firebase error: " + e.message);
-    return true;
+    return false;
   }
 }
 
-
-  } catch (e) {
-    setStatus("Firebase error: " + e.message);
-    return false;
 function setStatus(t){statusEl.textContent=t}
 function render(){
   boardEl.innerHTML="";
