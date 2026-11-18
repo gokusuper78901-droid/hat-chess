@@ -99,6 +99,7 @@ let db=null, roomRef=null, unsubscribe=null, game=new Chess(), roomCode="", myCo
 const boardEl=document.getElementById("board"), statusEl=document.getElementById("status");
 const pieceInfo={k:["✝","KING"],q:["♛","QUEEN"],r:["▥","ROOK"],b:["◇","BISHOP"],n:["♞","KNIGHT"],p:["⌂","PAWN"]};
 
+
 async function initFirebase() {
   try {
     if (!firebase.apps.length) {
@@ -111,6 +112,13 @@ async function initFirebase() {
 
     db = firebase.database();
     return true;
+
+  } catch (e) {
+    setStatus("Firebase error: " + e.message);
+    return true;
+  }
+}
+
 
   } catch (e) {
     setStatus("Firebase error: " + e.message);
