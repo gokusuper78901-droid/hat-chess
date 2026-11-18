@@ -98,11 +98,23 @@ const firebaseConfig = {
 let db=null, roomRef=null, unsubscribe=null, game=new Chess(), roomCode="", myColor=null, selected=null, flipped=false, busy=false;
 const boardEl=document.getElementById("board"), statusEl=document.getElementById("status");
 const pieceInfo={k:["✝","KING"],q:["♛","QUEEN"],r:["▥","ROOK"],b:["◇","BISHOP"],n:["♞","KNIGHT"],p:["⌂","PAWN"]};
-function initFirebase(){
-  if(!firebaseConfig){statusEl.textContent="Online mode needs your Firebase config. Follow the setup notes, then paste it into this file.";return false;}
-  if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-  db=firebase.database();return true;
-}
+
+async function initFirebase() {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    if (!firebase.auth().currentUser) {
+      await firebase.auth().signInAnonymously();
+    }
+
+    db = firebase.database();
+    return true;
+
+  } catch (e) {
+    setStatus("Firebase error: " + e.message);
+    return false;
 function setStatus(t){statusEl.textContent=t}
 function render(){
   boardEl.innerHTML="";
