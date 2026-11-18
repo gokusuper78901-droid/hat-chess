@@ -85,7 +85,16 @@ button.secondary{background:#475569}button:disabled{opacity:.45;cursor:not-allow
      appId: "YOUR_APP_ID"
    };
 */
-const firebaseConfig = null; // Replace null with your config object.
+const firebaseConfig = {
+  apiKey: "AIzaSyCAi8QGWml1KcqXD5oGqnI3uqMJzYQKaEU",
+  authDomain: "hat-chess.firebaseapp.com",
+  databaseURL: "https://hat-chess-default-rtdb.firebaseio.com",
+  projectId: "hat-chess",
+  storageBucket: "hat-chess.firebasestorage.app",
+  messagingSenderId: "891360462942",
+  appId: "1:891360462942:web:53ba7f5b57b7c0bcab4ccf",
+  measurementId: "G-4D8XFFM88M"
+};
 let db=null, roomRef=null, unsubscribe=null, game=new Chess(), roomCode="", myColor=null, selected=null, flipped=false, busy=false;
 const boardEl=document.getElementById("board"), statusEl=document.getElementById("status");
 const pieceInfo={k:["✝","KING"],q:["♛","QUEEN"],r:["▥","ROOK"],b:["◇","BISHOP"],n:["♞","KNIGHT"],p:["⌂","PAWN"]};
