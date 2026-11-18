@@ -1,85 +1,249 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hat Chess Online</title>
+
 <style>
-:root{--light:#f0d9b5;--dark:#b58863;--ink:#202532;--accent:#5865f2}
-*{box-sizing:border-box}body{margin:0;background:#111827;color:#f8fafc;font-family:Arial,sans-serif}
-main{max-width:1050px;margin:auto;padding:22px;display:grid;grid-template-columns:minmax(280px,620px) minmax(230px,1fr);gap:22px}
-h1{margin:0 0 5px;font-size:28px}.sub{color:#cbd5e1;margin:0 0 18px}
-.panel{background:#1f2937;border:1px solid #374151;border-radius:14px;padding:16px}
-.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-input,button{border:0;border-radius:8px;padding:11px;font-size:14px}
-input{min-width:0;flex:1;background:#f8fafc;color:#111827}
-button{background:var(--accent);color:white;font-weight:700;cursor:pointer}
-button.secondary{background:#475569}button:disabled{opacity:.45;cursor:not-allowed}
-#status{font-weight:700;margin:12px 0;color:#e2e8f0;min-height:22px}
-#board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border:5px solid #0b1220;border-radius:5px;overflow:hidden}
-.square{border:0;border-radius:0;padding:0;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;aspect-ratio:1;color:#111827}
-.square.light{background:var(--light)}.square.dark{background:var(--dark)}
-.square.selected{outline:4px solid #facc15;outline-offset:-4px}
-.square.target:after{content:"";width:23%;height:23%;border-radius:50%;background:#166534;opacity:.7;position:absolute}
-.piece{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;pointer-events:none;font-weight:800;text-shadow:0 1px 1px #0005}
-.hat{font-size:clamp(15px,3vw,28px);height:1em}
-.pname{font-size:clamp(8px,1.6vw,15px);letter-spacing:-.5px}
-.whitepiece{color:#fffdf4;-webkit-text-stroke:.35px #272727;text-shadow:0 1px 2px #111}
-.blackpiece{color:#171717;text-shadow:0 1px 1px #fff8}
-.side{display:flex;flex-direction:column;gap:12px}.muted{color:#cbd5e1;font-size:13px;line-height:1.5}
-#moves{background:#111827;border-radius:8px;padding:10px;min-height:100px;max-height:220px;overflow:auto;white-space:pre-wrap;font-family:monospace}
-.roomline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.roomline strong{color:#a5b4fc}
-@media(max-width:760px){main{display:flex;flex-direction:column;padding:12px}.side{order:2}}
+:root {
+  --light: #f0d9b5;
+  --dark: #b58863;
+  --accent: #5865f2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #111827;
+  color: #f8fafc;
+  font-family: Arial, sans-serif;
+}
+
+main {
+  max-width: 1050px;
+  margin: auto;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: minmax(280px,620px) minmax(230px,1fr);
+  gap: 22px;
+}
+
+h1 { margin: 0 0 5px; font-size: 28px; }
+
+.sub, .muted { color: #cbd5e1; }
+
+.panel {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+input, button {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px;
+  font-size: 14px;
+}
+
+input {
+  min-width: 0;
+  flex: 1;
+  background: #f8fafc;
+  color: #111827;
+}
+
+button {
+  background: var(--accent);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.secondary { background: #475569; }
+
+#status {
+  font-weight: bold;
+  margin: 12px 0;
+  min-height: 22px;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(8,1fr);
+  width: 100%;
+  aspect-ratio: 1;
+  border: 5px solid #0b1220;
+  overflow: hidden;
+}
+
+.square {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+}
+
+.square.light { background: var(--light); }
+.square.dark { background: var(--dark); }
+
+.square.selected {
+  outline: 4px solid #facc15;
+  outline-offset: -4px;
+}
+
+.square.target:after {
+  content: "";
+  width: 23%;
+  height: 23%;
+  border-radius: 50%;
+  background: #166534;
+  opacity: .7;
+  position: absolute;
+}
+
+.piece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  font-weight: 800;
+}
+
+.hat { font-size: clamp(15px,3vw,28px); }
+.pname { font-size: clamp(8px,1.6vw,15px); }
+
+.whitepiece {
+  color: #fffdf4;
+  -webkit-text-stroke: .35px #272727;
+}
+
+.blackpiece { color: #171717; }
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.muted {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+#moves {
+  background: #111827;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 100px;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+}
+
+.roomline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.roomline strong { color: #a5b4fc; }
+
+@media(max-width:760px) {
+  main {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+  }
+}
 </style>
 </head>
+
 <body>
 <main>
+
 <section>
   <h1>♟ Hat Chess Online</h1>
   <p class="sub">Play a friend online. Every piece has its own little hat.</p>
+
   <div class="panel">
     <div class="controls">
       <input id="room" maxlength="20" placeholder="Room code (e.g. BLUEBIRD)">
       <button id="join">Create / Join</button>
     </div>
-    <div class="roomline muted">Room: <strong id="roomName">Not connected</strong> · You are: <strong id="myColor">—</strong></div>
+
+    <div class="roomline muted">
+      Room: <strong id="roomName">Not connected</strong>
+      · You are: <strong id="myColor">—</strong>
+    </div>
+
     <div id="status">Enter a room code to start.</div>
     <div id="board" aria-label="Chess board"></div>
+
     <div class="controls" style="margin-top:12px">
       <button class="secondary" id="newgame">New game</button>
       <button class="secondary" id="flip">Flip board</button>
     </div>
   </div>
 </section>
+
 <aside class="side">
   <div class="panel">
     <h3 style="margin-top:0">How to play online</h3>
-    <p class="muted">Both players open this same page and enter the same room code. The first player gets White; the second gets Black. Share the room code with your friend.</p>
-    <p class="muted">To enable online rooms, add your Firebase project's configuration in the code where it says <b>PASTE YOUR FIREBASE CONFIG HERE</b>. See the setup notes below.</p>
+    <p class="muted">
+      Both players open this page and enter the same room code.
+      The first player gets White; the second gets Black.
+    </p>
   </div>
+
   <div class="panel">
     <h3 style="margin-top:0">Move history</h3>
     <div id="moves">No moves yet.</div>
   </div>
+
   <div class="panel">
     <h3 style="margin-top:0">Piece hats</h3>
-    <p class="muted">King: ✝ crown · Queen: ♛ pointed crown · Rook: ▥ castle cap · Bishop: ◇ mitre · Knight: ♞ helmet · Pawn: ⌂ cap</p>
-    <p class="muted">The game uses standard chess rules, including check, checkmate, castling, en passant and pawn promotion.</p>
+    <p class="muted">
+      King: ✝ · Queen: ♛ · Rook: ▥ · Bishop: ◇ · Knight: ♞ · Pawn: ⌂
+    </p>
+    <p class="muted">
+      Standard chess rules, including check, checkmate, castling,
+      en passant and pawn promotion.
+    </p>
   </div>
 </aside>
+
 </main>
 
+<!-- Chess rules library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 
-<!-- Firebase compat SDK -->
+<!-- Firebase libraries: keep all three -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-
-<!-- Firebase Authentication -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
-<!-- Firebase Realtime Database -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
+// YOUR FIREBASE CONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyCAi8QGWml1KcqXD5oGqnI3uqMJzYQKaEU",
   authDomain: "hat-chess.firebaseapp.com",
@@ -91,103 +255,317 @@ const firebaseConfig = {
   measurementId: "G-4D8XFFM88M"
 };
 
-let db=null, roomRef=null, unsubscribe=null, game=new Chess(), roomCode="", myColor=null, selected=null, flipped=false, busy=false;
-const boardEl=document.getElementById("board"), statusEl=document.getElementById("status");
-const pieceInfo={k:["✝","KING"],q:["♛","QUEEN"],r:["▥","ROOK"],b:["◇","BISHOP"],n:["♞","KNIGHT"],p:["⌂","PAWN"]};
+let db = null;
+let roomRef = null;
+let unsubscribe = null;
+let game = new Chess();
+let roomCode = "";
+let myColor = null;
+let selected = null;
+let flipped = false;
+let busy = false;
 
+const boardEl = document.getElementById("board");
+const statusEl = document.getElementById("status");
 
+const pieceInfo = {
+  k: ["✝","KING"],
+  q: ["♛","QUEEN"],
+  r: ["▥","ROOK"],
+  b: ["◇","BISHOP"],
+  n: ["♞","KNIGHT"],
+  p: ["⌂","PAWN"]
+};
+
+function setStatus(message) {
+  statusEl.textContent = message;
+}
+
+// CONNECT TO FIREBASE
 async function initFirebase() {
   try {
+    if (!window.firebase) {
+      throw new Error("Firebase scripts did not load. Check your internet connection.");
+    }
+
+    if (typeof firebase.auth !== "function") {
+      throw new Error("Firebase Auth library is missing. Check the auth-compat script.");
+    }
+
+    if (typeof firebase.database !== "function") {
+      throw new Error("Firebase Database library is missing.");
+    }
+
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
 
-    if (!firebase.auth().currentUser) {
-      await firebase.auth().signInAnonymously();
+    const auth = firebase.auth();
+
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
     }
 
     db = firebase.database();
     return true;
 
-  } catch (e) {
-    setStatus("Firebase error: " + e.message);
+  } catch (error) {
+    setStatus("Firebase error: " + error.message);
+    console.error(error);
     return false;
   }
 }
 
-function setStatus(t){statusEl.textContent=t}
-function render(){
-  boardEl.innerHTML="";
-  const files=flipped?"hgfedcba":"abcdefgh", ranks=flipped?"12345678":"87654321";
-  const legal=selected?game.moves({square:selected,verbose:true}):[];
-  for(const rank of ranks)for(const file of files){
-    const sq=file+rank, piece=game.get(sq), btn=document.createElement("button");
-    const dark=((files.indexOf(file)+ranks.indexOf(rank))%2===1);
-    btn.className="square "+(dark?"dark":"light")+(sq===selected?" selected":"")+(legal.some(m=>m.to===sq)?" target":"");
-    btn.setAttribute("aria-label",sq+(piece?(" "+piece.color+" "+piece.type):""));
-    if(piece){
-      const info=pieceInfo[piece.type], wrap=document.createElement("span");
-      wrap.className="piece "+(piece.color==="w"?"whitepiece":"blackpiece");
-      const hat=document.createElement("span"), name=document.createElement("span");
-      hat.className="hat";hat.textContent=info[0];name.className="pname";name.textContent=info[1];
-      wrap.append(hat,name);btn.append(wrap);
+// DRAW THE BOARD
+function render() {
+  boardEl.innerHTML = "";
+
+  const files = flipped ? "hgfedcba" : "abcdefgh";
+  const ranks = flipped ? "12345678" : "87654321";
+
+  const legal = selected
+    ? game.moves({ square: selected, verbose: true })
+    : [];
+
+  for (const rank of ranks) {
+    for (const file of files) {
+      const square = file + rank;
+      const piece = game.get(square);
+      const button = document.createElement("button");
+
+      const dark =
+        (files.indexOf(file) + ranks.indexOf(rank)) % 2 === 1;
+
+      button.className =
+        "square " +
+        (dark ? "dark" : "light") +
+        (square === selected ? " selected" : "") +
+        (legal.some(move => move.to === square) ? " target" : "");
+
+      if (piece) {
+        const info = pieceInfo[piece.type];
+        const wrap = document.createElement("span");
+        wrap.className =
+          "piece " + (piece.color === "w" ? "whitepiece" : "blackpiece");
+
+        const hat = document.createElement("span");
+        const name = document.createElement("span");
+
+        hat.className = "hat";
+        hat.textContent = info[0];
+
+        name.className = "pname";
+        name.textContent = info[1];
+
+        wrap.append(hat, name);
+        button.append(wrap);
+      }
+
+      button.addEventListener("click", () => clickSquare(square));
+      boardEl.append(button);
     }
-    btn.addEventListener("click",()=>clickSquare(sq));boardEl.append(btn);
   }
-  document.getElementById("moves").textContent=game.history().length?game.history().join("  "):"No moves yet.";
+
+  document.getElementById("moves").textContent =
+    game.history().length
+      ? game.history().join("  ")
+      : "No moves yet.";
 }
-function updateStatus(){
-  if(game.game_over()){
-    if(game.in_checkmate())setStatus("Checkmate! "+(game.turn()==="w"?"Black":"White")+" wins.");
-    else if(game.in_stalemate())setStatus("Draw by stalemate.");
-    else if(game.in_draw())setStatus("Draw.");
-    else setStatus("Game over.");
-  } else setStatus((game.turn()==="w"?"White":"Black")+" to move"+(game.in_check()?" — check!":"")+(myColor?" · You are "+(myColor==="w"?"White":"Black"):""));
-}
-function clickSquare(sq){
-  if(!roomRef||!myColor||game.turn()!==myColor||busy||game.game_over())return;
-  const p=game.get(sq);
-  if(selected){
-    let move=game.move({from:selected,to:sq,promotion:"q"});
-    if(move){selected=null;render();updateStatus();publish();return;}
-    if(p&&p.color===myColor){selected=sq;render();return;}
-    selected=null;render();return;
+
+// UPDATE GAME STATUS
+function updateStatus() {
+  if (game.game_over()) {
+    if (game.in_checkmate()) {
+      setStatus("Checkmate! " + (game.turn() === "w" ? "Black" : "White") + " wins.");
+    } else if (game.in_stalemate()) {
+      setStatus("Draw by stalemate.");
+    } else if (game.in_draw()) {
+      setStatus("Draw.");
+    } else {
+      setStatus("Game over.");
+    }
+  } else {
+    setStatus(
+      (game.turn() === "w" ? "White" : "Black") +
+      " to move" +
+      (game.in_check() ? " — check!" : "") +
+      (myColor ? " · You are " + (myColor === "w" ? "White" : "Black") : "")
+    );
   }
-  if(p&&p.color===myColor){selected=sq;render();}
 }
-async function publish(){
-  if(!roomRef)return;busy=true;
-  try{await roomRef.update({fen:game.fen(),pgn:game.pgn(),turn:game.turn(),updatedAt:Date.now()});}
-  catch(e){setStatus("Could not sync move. Check Firebase setup and database rules.");}
-  finally{busy=false;}
+
+// HANDLE CHESS MOVES
+function clickSquare(square) {
+  if (!roomRef || !myColor || game.turn() !== myColor ||
+      busy || game.game_over()) return;
+
+  const piece = game.get(square);
+
+  if (selected) {
+    const move = game.move({
+      from: selected,
+      to: square,
+      promotion: "q"
+    });
+
+    if (move) {
+      selected = null;
+      render();
+      updateStatus();
+      publish();
+      return;
+    }
+
+    if (piece && piece.color === myColor) {
+      selected = square;
+      render();
+      return;
+    }
+
+    selected = null;
+    render();
+    return;
+  }
+
+  if (piece && piece.color === myColor) {
+    selected = square;
+    render();
+  }
 }
-async function joinRoom(){
-  const code=document.getElementById("room").value.trim().toUpperCase().replace(/[^A-Z0-9-]/g,"").slice(0,20);
-  if(!code){setStatus("Type a room code first.");return;}
-  if(!initFirebase())return;
-  if(unsubscribe){roomRef.off("value",unsubscribe);unsubscribe=null;}
-  roomCode=code;roomRef=db.ref("hat-chess-rooms/"+code);
-  try{
-    let snap=await roomRef.once("value"), data=snap.val();
-    if(!data){myColor="w";game=new Chess();await roomRef.set({fen:game.fen(),pgn:"",players:{w:true},createdAt:Date.now()});}
-    else if(!data.players||!data.players.b){myColor="b";await roomRef.child("players/b").set(true);}
-    else if(data.players.w&&data.players.b){setStatus("That room already has two players. Choose another code.");return;}
-    document.getElementById("roomName").textContent=code;
-    document.getElementById("myColor").textContent=myColor==="w"?"White":"Black";
-    unsubscribe=snap=>{const d=snap.val();if(!d)return;if(d.fen&&d.fen!==game.fen()){game.load(d.fen);selected=null;render();updateStatus();}};
-    roomRef.on("value",unsubscribe);
-    render();updateStatus();
-  }catch(e){setStatus("Could not join room. Check Firebase configuration and database rules.");}
+
+// SEND MOVES TO FIREBASE
+async function publish() {
+  if (!roomRef) return;
+
+  busy = true;
+
+  try {
+    await roomRef.update({
+      fen: game.fen(),
+      pgn: game.pgn(),
+      turn: game.turn(),
+      updatedAt: Date.now()
+    });
+  } catch (error) {
+    setStatus("Could not sync move: " + error.message);
+  } finally {
+    busy = false;
+  }
 }
-document.getElementById("join").addEventListener("click",joinRoom);
-document.getElementById("flip").addEventListener("click",()=>{flipped=!flipped;render()});
-document.getElementById("newgame").addEventListener("click",async()=>{
-  if(!roomRef||!myColor)return;
-  if(!confirm("Start a new game for both players?"))return;
-  game=new Chess();selected=null;
-  try{await roomRef.update({fen:game.fen(),pgn:"",turn:"w",updatedAt:Date.now()});render();updateStatus();}
-  catch(e){setStatus("Could not restart the game.");}
-});
+
+// CREATE OR JOIN A ROOM
+async function joinRoom() {
+  const code = document.getElementById("room")
+    .value.trim().toUpperCase()
+    .replace(/[^A-Z0-9-]/g, "")
+    .slice(0, 20);
+
+  if (!code) {
+    setStatus("Type a room code first.");
+    return;
+  }
+
+  setStatus("Connecting to Firebase...");
+
+  // IMPORTANT: await is required here
+  if (!(await initFirebase())) return;
+
+  if (roomRef && unsubscribe) {
+    roomRef.off("value", unsubscribe);
+    unsubscribe = null;
+  }
+
+  roomCode = code;
+  roomRef = db.ref("hat-chess-rooms/" + code);
+
+  try {
+    const snapshot = await roomRef.once("value");
+    const data = snapshot.val();
+
+    if (!data) {
+      myColor = "w";
+      game = new Chess();
+
+      await roomRef.set({
+        fen: game.fen(),
+        pgn: "",
+        players: { w: true },
+        createdAt: Date.now()
+      });
+
+    } else if (!data.players || !data.players.b) {
+      myColor = "b";
+      await roomRef.child("players/b").set(true);
+
+    } else if (data.players.w && data.players.b) {
+      roomRef = null;
+      myColor = null;
+      setStatus("That room already has two players. Choose another code.");
+      return;
+    }
+
+    document.getElementById("roomName").textContent = code;
+    document.getElementById("myColor").textContent =
+      myColor === "w" ? "White" : "Black";
+
+    unsubscribe = snapshot => {
+      const data = snapshot.val();
+      if (!data || !data.fen) return;
+
+      if (data.fen !== game.fen()) {
+        game.load(data.fen);
+        selected = null;
+        render();
+        updateStatus();
+      }
+    };
+
+    roomRef.on("value", unsubscribe);
+
+    render();
+    updateStatus();
+
+  } catch (error) {
+    setStatus("Could not join room: " + error.message);
+    console.error(error);
+  }
+}
+
+// BUTTONS
+document.getElementById("join")
+  .addEventListener("click", joinRoom);
+
+document.getElementById("flip")
+  .addEventListener("click", () => {
+    flipped = !flipped;
+    render();
+  });
+
+document.getElementById("newgame")
+  .addEventListener("click", async () => {
+    if (!roomRef || !myColor) return;
+
+    if (!confirm("Start a new game for both players?")) return;
+
+    game = new Chess();
+    selected = null;
+
+    try {
+      await roomRef.update({
+        fen: game.fen(),
+        pgn: "",
+        turn: "w",
+        updatedAt: Date.now()
+      });
+
+      render();
+      updateStatus();
+
+    } catch (error) {
+      setStatus("Could not restart the game: " + error.message);
+    }
+  });
+
 render();
 </script>
 </body>
